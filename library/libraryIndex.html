@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Management</title>
+  </head>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <body>
+    <div class="container my-4">
+      <h1 class="mb-4">Welcome From Library</h1>
+      <input
+        type="text"
+        name="bookName"
+        id="book_name"
+        placeholder="Book Name"
+      />
+      <input type="text" name="category" id="category" placeholder="Category" />
+      <!-- <button class="btn btn-outline-secondary" id="search_btn">Search</button> -->
+      <button class="btn btn-outline-primary" id="add_btn">Add Books</button>
+      <button class="btn btn-outline-info" id="borrow_btn">Borrow Books</button>
+      <button class="btn btn-outline-secondary" id="popular_btn">
+        Popular Books
+      </button>
+    </div>
+
+    <div class="container" id="book-list">
+      <ul id="books" class="list-group"></ul>
+    </div>
+
+    <script>
+      let books = [
+        { name: "Math Book", category: "Math", isBorrow: false, count: 0 },
+        {
+          name: "Science Book",
+          category: "Science",
+          isBorrow: false,
+          count: 0,
+        },
+        {
+          name: "History Book",
+          category: "History",
+          isBorrow: false,
+          count: 0,
+        },
+        {
+          name: "English Book",
+          category: "English",
+          isBorrow: false,
+          count: 0,
+        },
+        { name: "Romance Book", category: "Love", isBorrow: false, count: 0 },
+      ];
+      let storedBook = JSON.parse(localStorage.getItem("books"));
+      if (!localStorage.getItem("books")) {
+        localStorage.setItem("books", JSON.stringify(books));
+      } else {
+        browseAllBooks();
+      }
+
+      //console.log(JSON.parse(localStorage.getItem('books')));
+
+      function createBookItem(item) {
+        // console.log(item);
+        let li = document.createElement("li");
+        li.classList.add("list-group-item");
+        li.textContent = `Book Name : ${item.name}, Book Category : ${item.category} `;
+        let borrow = document.createElement("button");
+        borrow.classList.add("btn", "btn-outline-warning", "float-end", "me-2");
+        borrow.textContent = "Borrow";
+
+        borrow.onclick = function () {
+          for (let i = 0; i < storedBook.length; i++) {
+            if (storedBook[i].name === item.name) {
+              storedBook[i].isBorrow = true;
+              storedBook[i].count += 1;
+              li.remove();
+            }
+          }
+          localStorage.setItem("books", JSON.stringify(storedBook));
+        };
+        li.appendChild(borrow);
+        document.querySelector("#books").appendChild(li);
+      }
+
+      function browseAllBooks() {
+        for (let i = 0; i < storedBook.length; i++) {
+          if (!storedBook[i].isBorrow) {
+            createBookItem(storedBook[i]);
+          }
+        }
+      }
+
+      function addNewBook(name, category) {
+        let newBook = {
+          name: name,
+          category: category,
+          isBorrow: false,
+          count: 0,
+        };
+        storedBook.push(newBook);
+        // console.log(newBook);
+        createBookItem(newBook);
+        localStorage.setItem("books", JSON.stringify(storedBook));
+        //console.log(storedBook);
+      }
+
+      document.querySelector("#add_btn").onclick = function () {
+        let name = document.querySelector("#book_name").value;
+        let category = document.querySelector("#category").value;
+        addNewBook(name, category);
+      };
+      document.querySelector("#borrow_btn").onclick = function () {
+        document.querySelector("#books").innerHTML = "";
+        for (let i = 0; i < storedBook.length; i++) {
+          if (storedBook[i].isBorrow) {
+            let li = document.createElement("li");
+            li.classList.add("list-group-item");
+            li.textContent = `Book Name : ${storedBook[i].name}, Book Category : ${storedBook[i].category} `;
+            let returnBtn = document.createElement("button");
+            returnBtn.classList.add(
+              "btn",
+              "btn-outline-warning",
+              "float-end",
+              "me-2"
+            );
+            returnBtn.textContent = "Return";
+            returnBtn.onclick = function () {
+              storedBook[i].isBorrow = false;
+              li.remove();
+              localStorage.setItem("books", JSON.stringify(storedBook));
+            };
+            li.appendChild(returnBtn);
+            document.querySelector("#books").appendChild(li);
+          }
+        }
+      };
+      document.querySelector("#popular_btn").onclick = function () {
+        document.querySelector("#books").innerHTML = "";
+
+        let maxCount = Math.max(...storedBook.map((book) => book.count));
+        let maxBook = storedBook.filter((book) => {
+          console.log(book.count);
+          return book.count === maxCount;
+        });
+        console.log(maxBook);
+        //console.log(Math.max(...storedBook.map((book) => book.count)));
+
+        maxBook.forEach(max => {
+          let li = document.createElement("li");
+          li.classList.add("list-group-item");
+          li.textContent = `Book Name : ${max.name}, Book Category : ${max.category} `;
+          document.querySelector("#books").appendChild(li);
+        });
+      };
+    </script>
+  </body>
+</html>
